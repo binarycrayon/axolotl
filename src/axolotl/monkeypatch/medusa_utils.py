@@ -18,7 +18,7 @@ from transformers.trainer_pt_utils import LabelSmoother
 IGNORE_TOKEN_ID = LabelSmoother.ignore_index
 import types
 import math
-import wandb
+import comet_ml
 import transformers
 
 logger = LOG = logging.getLogger("axolotl.monkeypatch.medusa")
@@ -314,10 +314,7 @@ def replace_compute_loss(
         log = {f"{prefix}/{k}": v for k, v in log.items()}
         if medusa_logging and self.state.is_world_process_zero:
             # Hardcoded for now
-            wandb.log({
-                **log,
-                "train/global_step": self.state.global_step,
-            })
+            comet_ml.log_metrics(log, step=self.state.global_step)
         return (loss, logits) if return_outputs else loss
     transformers.trainer.Trainer.compute_loss = compute_loss
 
